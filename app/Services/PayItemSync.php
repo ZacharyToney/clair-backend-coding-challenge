@@ -47,22 +47,11 @@ class PayItemSync
         try {
 
             $url = "https://$partnerWebsite/clair-pay-item-sync/$businessExternalId";
-            //dd($url,"http://localhost/clair-pay-item-sync/test?page=3");
 
-//            $resultsFromPayItemApi = $guzzle->get($url,[
-//                'timeout'=>5,
-//                'query'=>['page'=>$page]
-//            ]);
-            //$resultsFromPayItemApi = json_decode($resultsFromPayItemApi->getBody()->getContents(),true);
-
-            //dd($resultsFromPayItemApi);
-
-            if ($page === 1){
-                $resultsFromPayItemApi = $this->firstPageFakeApi();
-            }
-            else{
-                $resultsFromPayItemApi = $this->secondPageFakeApi();
-            }
+            $resultsFromPayItemApi = $guzzle->get($url,[
+                'query'=>['page'=>$page]
+            ]);
+            $resultsFromPayItemApi = json_decode($resultsFromPayItemApi->getBody()->getContents(),true);
 
             foreach ($resultsFromPayItemApi as $apiKey=>$apiValue){
                 if ($apiKey === 'payItems'){
