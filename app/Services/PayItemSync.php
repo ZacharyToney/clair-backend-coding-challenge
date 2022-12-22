@@ -16,12 +16,12 @@ class PayItemSync
     /**
      * @throws \Throwable
      */
-    public function payItemSyncExecute(Business $business): void
+    public function payItemSyncExecute(Business $business,$testing = false): void
     {
         try {
             if ($business->enabled){
                 DB::beginTransaction();
-                $this->getDataFromApi($business->external_id,1);
+                $this->getDataFromApi($business->external_id,1,$testing);
                 DB::commit();
             }
         }
@@ -35,7 +35,7 @@ class PayItemSync
      * @throws GuzzleException
      * @throws Exception
      */
-    private function getDataFromApi(string $businessExternalId, int $page): void
+    private function getDataFromApi(string $businessExternalId, int $page,bool $testing): void
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -48,10 +48,21 @@ class PayItemSync
 
             $url = "https://$partnerWebsite/clair-pay-item-sync/$businessExternalId";
 
-            $resultsFromPayItemApi = $guzzle->get($url,[
-                'query'=>['page'=>$page]
-            ]);
-            $resultsFromPayItemApi = json_decode($resultsFromPayItemApi->getBody()->getContents(),true);
+            if ($testing){
+                if ($page === 1){
+                    $resultsFromPayItemApi = $this->firstPageFakeApi();
+                }
+                else{
+                    $resultsFromPayItemApi = $this->secondPageFakeApi();
+                }
+            }
+            else{
+                $resultsFromPayItemApi = $guzzle->get($url,[
+                    'query'=>['page'=>$page]
+                ]);
+                $resultsFromPayItemApi = json_decode($resultsFromPayItemApi->getBody()->getContents(),true);
+            }
+
 
             foreach ($resultsFromPayItemApi as $apiKey=>$apiValue){
                 if ($apiKey === 'payItems'){
@@ -64,7 +75,7 @@ class PayItemSync
                 if($apiKey === 'isLastPage'){
                     if(!$apiValue){
                         $page++;
-                        $this->getDataFromApi($businessExternalId,$page);
+                        $this->getDataFromApi($businessExternalId,$page,$testing);
                     }
                 }
             }
@@ -103,5 +114,50 @@ class PayItemSync
             ]);
         }
 
+    }
+
+    private function firstPageFakeApi()
+    {
+        $jsonString = '
+    {
+      "payItems": [
+        {
+          "id": "anExternalIdForFirstPayItem",
+          "employeeId": "firstEmployeeId",
+          "hoursWorked": 11.5,
+          "payRate": 11.5,
+          "date": "2021-10-19"
+        }
+      ],
+      "isLastPage": false
+}
+    ';
+        return json_decode($jsonString);
+    }
+
+    private function secondPageFakeApi()
+    {
+        $jsonString = '
+    {
+          "payItems": [
+            {
+              "id": "anExternalIdForSecondPayItem",
+              "employeeId": "secondEmployeeId",
+              "hoursWorked": 8.5,
+              "payRate": 12.5,
+              "date": "2021-10-19"
+            },
+            {
+              "id": "anExternalIdForThirdPayItem",
+              "employeeId": "thirdEmployeeId",
+              "hoursWorked": 10,
+              "payRate": 8,
+              "date": "2021-10-18"
+            }
+          ],
+          "isLastPage": true
+        }
+    ';
+        return json_decode($jsonString);
     }
 }

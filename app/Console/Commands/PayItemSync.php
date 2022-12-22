@@ -10,9 +10,9 @@ class PayItemSync extends Command
     /**
      * The name and signature of the console command.
      *
-     * @var string
+     * @mixed [string,bool]
      */
-    protected $signature = 'payItemSync:run {externalBusinessId}';
+    protected $signature = 'payItemSync:run {externalBusinessId} {testing}';
 
     /**
      * The console command description.
@@ -28,9 +28,10 @@ class PayItemSync extends Command
     public function handle()
     {
         $business = $this->argument('externalBusinessId');
+        $testing = $this->argument('testing');
         $business = Business::where('external_id','=',$business)->first();
         $payItemSync = new \App\Services\PayItemSync();
-        $payItemSync->payItemSyncExecute($business);
+        $payItemSync->payItemSyncExecute($business,$testing);
         return Command::SUCCESS;
     }
 }
