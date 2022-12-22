@@ -104,49 +104,4 @@ class PayItemSync
         }
 
     }
-
-    private function firstPageFakeApi()
-    {
-        $jsonString = '
-    {
-      "payItems": [
-        {
-          "id": "anExternalIdForThisPayItem",
-          "employeeId": "external_test",
-          "hoursWorked": 11.5,
-          "payRate": 11.5,
-          "date": "2021-10-19"
-        }
-      ],
-      "isLastPage": true
-}
-    ';
-        return json_decode($jsonString);
-    }
-
-    private function secondPageFakeApi()
-    {
-        $jsonString = '
-    {
-          "payItems": [
-            {
-              "id": "anExternalIdForThisPayItem",
-              "employeeId": "theExternalIdOfTheUserRelatedToTheSyncTargetBusiness",
-              "hoursWorked": 8.5,
-              "payRate": 12.5,
-              "date": "2021-10-19"
-            },
-            {
-              "id": "aDifferentExternalIdForThisPayItem",
-              "employeeId": "theExternalIdOfAnotherUserRelatedToTheSyncTargetBusiness",
-              "hoursWorked": 10,
-              "payRate": 8,
-              "date": "2021-10-18"
-            }
-          ],
-          "isLastPage": false
-        }
-    ';
-        return json_decode($jsonString);
-    }
 }
